@@ -1,72 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Memory Game</title>
     <style>
-        img{
+        img {
             width: 200px;
             height: 200px;
         }
 
-        #grid {
+        .grid {
             display: grid;
-            grid-gap: 4px;
-            grid-template-columns: 200px 200px 200px 200px;
-            grid-template-rows: 200px 200px 200px 200px;
+            grid-gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
             position: absolute;
+            margin: 40px;
+            margin-left: 350px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: white;
+            font-size: 18px;
+            width: 100px;
+            margin: 0 auto;
+            padding: 10px;
+            text-align: center;
+            display: inline-block;
+
+        }
+
+        html, body {
+            background-image: linear-gradient(to right, red, yellow, yellow, red);
+        }
+
+        p {
+            background-color: white;
+            font-size: 18px;
+            width: 100px;
+            margin: 0 auto;
+            margin-right: 10px;
+            padding: 10px;
+            text-align: center;
+            display: inline-block;
+            border: 2px solid black;
+        }
+
+        .top-container {
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .card-cover {
+            background: url('cover.png') center/cover no-repeat;
+            cursor: pointer;
         }
     </style>
-
     <script>
-        
-        function disappear(img){
-            img.style["visibility"]="hidden"; 
+        var score = 0;
+        var cardImages = [
+            "wu.png", "jay.png", "jay.png", "lloyd.png", "zane.png", "nya.png",
+            "cole.png", "garmadon.png", "nya.png", "garmadon.png", "kai.png",
+            "cole.png", "wu.png", "zane.png", "kai.png", "lloyd.png"
+        ];
+
+        function shuffleArray(array) {
+            for (var i = 0; i < array.length; i++) {
+                var temp = array[i];
+                var index = Math.floor(Math.random() * array.length);
+                array[i] = array[index];
+                array[index] = temp;
+            }
+        }
+
+        function generateGrid() {
+            var grid = document.querySelector('.grid');
+            shuffleArray(cardImages);
+            for (var i = 0; i < cardImages.length; i++) {
+                var img = document.createElement('img');
+                img.src = 'cover.png';
+                img.classList.add('card-cover');
+                var id = "card" + i;
+                img.id = id;
+                img.alt = "Ninjago Card";
+                img.onclick = function () {
+                    score++;
+                    update(this, this.id);
+                    display();
+                };
+                grid.appendChild(img);
+            }
+        }
+
+        var firstCard = null;
+        var secondCard = null;
+
+        function update(card, id) {
+            if (!firstCard) {
+                firstCard = card;
+                firstCard.src = cardImages[id.substring(4)];
+                firstCard.setAttribute("data-flipped", "true");
+            } else if (!secondCard) {
+                secondCard = card;
+                secondCard.src = cardImages[id.substring(4)];
+                secondCard.setAttribute("data-flipped", "true");
+
+                if (firstCard.src === secondCard.src) {
+                    firstCard = null;
+                    secondCard = null;
+                    display();
+                } else {
+                    setTimeout(function () {
+                        firstCard.src = 'cover.png';
+                        secondCard.src = 'cover.png';
+                        firstCard.removeAttribute("data-flipped");
+                        secondCard.removeAttribute("data-flipped");
+                        firstCard = null;
+                        secondCard = null;
+                    }, 1000);
+                }
+            }
+        }
+
+        function reset() {
+            score = 0;
+            display();
+            firstCard = null;
+            secondCard = null;
+            generateGrid();
+        }
+
+        function display() {
+            var currentScore = document.getElementById("score");
+            currentScore.innerHTML = "Score: " + score;
+
+        }
+
+        window.onload = function () {
+            generateGrid();
+            display();
         }
     </script>
 </head>
+
 <body>
-    <p>Score: <span class="score"></span></p>
 
-    <div id="grid">
-    <img src="wu.png" alt="Sensei Wu Ninjago">
-    <img src="jay.png" alt="Jay Ninjago">
-    <img src="jay.png" alt="Jay Ninjago">
-    <img src="lloyd.png" alt="Lloyd Ninjago">
-    <img src="zane.png" alt="Zane Ninjago">
-    <img src="nya.png" alt="Nya Ninjago">
-    <img src="cole.png" alt="Cole Ninjago">
-    <img src="garmadon.png" alt="Lord Garmadon Ninjago">
-    <img src="nya.png" alt="Nya Ninjago">
-    <img src="garmadon.png" alt="Lord Garmadon Ninjago">
-    <img src="kai.png" alt="Kai Ninjago">
-    <img src="cole.png" alt="Cole Ninjago">
-    <img src="wu.png" alt="Sensei Wu Ninjago">
-    <img src="zane.png" alt="Zane Ninjago">
-    <img src="kai.png" alt="Kai Ninjago">
-    <img src="lloyd.png" alt="Lloyd Ninjago">
+    <div class="grid"></div>
+    <div class="top-container">
+        <p><span id="score"></span></p>
+        <button onclick="reset()">Reset</button>
     </div>
-
-    <div id="grid">
-        <img id="wu1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="jay1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="jay2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="lloyd1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="zane1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="nya1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="cole1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="garmadon1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="nya2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="garmadon2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="kai1" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="cole2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="wu2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="zane2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="kai2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo">
-        <img id="lloyd2" onclick=disappear(this) src="cover.png" alt="Ninjago Logo"> 
-    </div>
-
-
 </body>
+
 </html>
