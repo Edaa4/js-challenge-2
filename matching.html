@@ -6,47 +6,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Game</title>
     <style>
-        img {
-            width: 200px;
-            height: 200px;
-            border-radius: 10%;
+        @media (min-width: 601px) {
+
+            img {
+                width: 200px;
+                height: 200px;
+            }
+
+            .grid {
+                display: grid;
+                grid-gap: 10px;
+                grid-template-columns: repeat(4, 1fr);
+                position: absolute;
+                margin: 40px;
+                margin-left: 350px;
+            }
+
+            button {
+                padding: 10px;
+                background-color: white;
+                font-size: 18px;
+                margin: 0 auto;
+                text-align: center;
+                display: inline-block;
+            }
+
+            html,
+            body {
+                background-image: linear-gradient(to right, red, yellow, yellow, red);
+            }
+
+            p {
+                background-color: white;
+                font-size: 18px;
+                width: 100px;
+                margin: 0 auto;
+                margin-right: 10px;
+                padding: 10px;
+                text-align: center;
+                display: inline-block;
+                border: 2px solid black;
+            }
+
         }
 
-        .grid {
-            display: grid;
-            grid-gap: 10px;
-            grid-template-columns: repeat(4, 1fr);
-            position: absolute;
-            margin: 40px;
-            margin-left: 350px;
-        }
+        @media (max-width: 600px) {
+            img {
+                width: 100px;
+                height: 100px;
+            }
 
-        button {
-            padding: 10px;
-            background-color: white;
-            font-size: 18px;
-            width: 100px;
-            margin: 0 auto;
-            padding: 10px;
-            text-align: center;
-            display: inline-block;
+            .grid {
+                display: grid;
+                grid-gap: 10px;
+                grid-template-columns: repeat(4, 1fr);
+                position: absolute;
+                margin: 40px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
 
-        }
+            button {
+                padding: 5px;
+                background-color: white;
+                font-size: 9px;
+                margin: 0 auto;
+                text-align: center;
+                display: inline-block;
+            }
 
-        html, body {
-            background-image: linear-gradient(to right, red, yellow, yellow, red);
-        }
+            html,
+            body {
+                background-image: linear-gradient(to right, yellow, red, red, yellow);
+            }
 
-        p {
-            background-color: white;
-            font-size: 18px;
-            width: 100px;
-            margin: 0 auto;
-            margin-right: 10px;
-            padding: 10px;
-            text-align: center;
-            display: inline-block;
-            border: 2px solid black;
+            p {
+                background-color: white;
+                font-size: 9px;
+                width: 100px;
+                margin: 0 auto;
+                margin-right: 10px;
+                padding: 5px;
+                text-align: center;
+                display: inline-block;
+                border: 2px solid black;
+            }
+
         }
 
         .top-container {
@@ -57,6 +102,10 @@
             right: 0;
         }
 
+        a {
+            text-decoration: none;
+        }
+
         .card-cover {
             background: url('cover.png') center/cover no-repeat;
             cursor: pointer;
@@ -64,6 +113,8 @@
     </style>
     <script>
         var score = 0;
+        var matches = 0;
+        var clicks = 0;
         var cardImages = [
             "wu.png", "jay.png", "jay.png", "lloyd.png", "zane.png", "nya.png",
             "cole.png", "garmadon.png", "nya.png", "garmadon.png", "kai.png",
@@ -81,7 +132,12 @@
 
         function generateGrid() {
             var grid = document.querySelector('.grid');
+
+            while (grid.firstChild) {
+                grid.removeChild(grid.firstChild);
+            }
             shuffleArray(cardImages);
+
             for (var i = 0; i < cardImages.length; i++) {
                 var img = document.createElement('img');
                 img.src = 'cover.png';
@@ -90,7 +146,6 @@
                 img.id = id;
                 img.alt = "Ninjago Card";
                 img.onclick = function () {
-                    score++;
                     update(this, this.id);
                     display();
                 };
@@ -100,46 +155,72 @@
 
         var firstCard = null;
         var secondCard = null;
+        var isProcessing = false;
 
         function update(card, id) {
+            if (isProcessing) {
+                return; 
+            }
+
             if (!firstCard) {
                 firstCard = card;
                 firstCard.src = cardImages[id.substring(4)];
                 firstCard.setAttribute("data-flipped", "true");
             } else if (!secondCard) {
+                isProcessing = true;
                 secondCard = card;
                 secondCard.src = cardImages[id.substring(4)];
                 secondCard.setAttribute("data-flipped", "true");
 
                 if (firstCard.src === secondCard.src) {
+                    clicks++;
                     firstCard = null;
                     secondCard = null;
-                    display();
+                    matches++;
+                    score += 2;
+                    isProcessing = false; 
                 } else {
+                    isProcessing = true; 
                     setTimeout(function () {
+                        clicks++;
                         firstCard.src = 'cover.png';
                         secondCard.src = 'cover.png';
                         firstCard.removeAttribute("data-flipped");
                         secondCard.removeAttribute("data-flipped");
                         firstCard = null;
                         secondCard = null;
+                        score += 2;
+                        display();
+                        isProcessing = false; 
                     }, 1000);
                 }
             }
+
+            if (matches > 7) {
+                localStorage.setItem('score', score);
+                window.location.href = "gameOver.html";
+            }
+            display();
         }
 
         function reset() {
             score = 0;
+            matches = 0;
             display();
             firstCard = null;
             secondCard = null;
+            var cardElements = document.querySelectorAll('.card-cover');
+            cardElements.forEach(function (card) {
+                card.src = 'cover.png';
+                card.removeAttribute("data-flipped");
+            });
+            shuffleArray(cardImages);
             generateGrid();
         }
 
         function display() {
             var currentScore = document.getElementById("score");
             currentScore.innerHTML = "Score: " + score;
-
         }
 
         window.onload = function () {
@@ -150,10 +231,12 @@
 </head>
 
 <body>
-
     <div class="grid"></div>
     <div class="top-container">
         <p><span id="score"></span></p>
+        <a href="instructions.html">
+            <button> Instructions </button>
+        </a>
         <button onclick="reset()">Reset</button>
     </div>
 </body>
